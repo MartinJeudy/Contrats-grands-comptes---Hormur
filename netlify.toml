@@ -1,0 +1,38 @@
+[build]
+  publish = "/"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+```
+
+### 2. `README.md` (optionnel mais utile)
+La documentation que je t'ai fournie pour que toi et tes commerciaux sachiez comment utiliser l'app.
+
+### 3. `.gitignore` (bonne pratique)
+```
+.DS_Store
+.env
+node_modules/
+```
+
+## Ce qui n'est PAS nécessaire sur GitHub
+
+- **`demo-data.js`** → C'est juste pour tester, tu l'utilises dans la console
+- **`n8n-workflows/`** → Ces fichiers JSON s'importent directement dans n8n, pas besoin sur le repo
+
+## Structure finale du repo
+```
+hormur-sales/
+├── index.html      ✅ (déjà fait)
+├── netlify.toml    ← à ajouter
+├── README.md       ← optionnel
+└── .gitignore      ← optionnel
