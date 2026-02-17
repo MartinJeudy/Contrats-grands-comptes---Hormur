@@ -11,3 +11,4 @@ window.N8N_WEBHOOK_SEND = 'https://n8n.srv971805.hstgr.cloud/webhook/hormur-send
 // Note: Ces clés Supabase sont conçues pour être publiques
 // La sécurité est assurée par les Row Level Security (RLS) policies
 // L'API Unipile reste côté n8n et n'est jamais exposée au frontend
+window.N8N_WEBHOOK_IMPORT = 'https://n8n.srv971805.hstgr.cloud/webhook/61df4721-2044-4fa9-b1b7-9b45414c957e';

@@ -78,6 +78,7 @@
       SUPABASE_URL: window.SUPABASE_URL || 'https://VOTRE_PROJET.supabase.co',
       SUPABASE_ANON_KEY: window.SUPABASE_ANON_KEY || 'VOTRE_ANON_KEY',
       N8N_WEBHOOK_SEND: window.N8N_WEBHOOK_SEND || 'https://n8n.srv971805.hstgr.cloud/webhook/hormur-send-message',
+      N8N_WEBHOOK_IMPORT: window.N8N_WEBHOOK_IMPORT || 'https://n8n.srv971805.hstgr.cloud/webhook/61df4721-2044-4fa9-b1b7-9b45414c957e',
       UNIPILE_ACCOUNT_ID: 'K3CniNpFRS2GBzOjMzL5sg',
     };
     
@@ -710,6 +711,22 @@
           const toInsert = data.map(p => ({ ...p, status: 'TO_CONTACT' }));
           const { error } = await supabase.from('prospects').insert(toInsert);
           if (error && error.code !== '23505') throw error;
+          
+          // Trigger n8n webhook
+          if (CONFIG.N8N_WEBHOOK_IMPORT) {
+            fetch(CONFIG.N8N_WEBHOOK_IMPORT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'import_contacts',
+                count: data.length,
+                contacts: data,
+                imported_at: new Date().toISOString(),
+                imported_by: user.email
+              })
+            }).catch(err => console.error('Webhook import error:', err));
+          }
+
           showToast(`${data.length} prospects importés !`);
           setShowImport(false); setImportText(''); refreshProspects();
         } catch (err) { console.error(err); showToast('Erreur import', 'error'); }
