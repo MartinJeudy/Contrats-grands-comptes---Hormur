@@ -804,7 +804,7 @@
                     <div key={lead.id} className="group flex items-center justify-between p-3 bg-white border border-hormur-sand/50 rounded-xl hover:border-hormur-terracotta/30 hover:shadow-sm transition-all cursor-pointer" onClick={() => claimLead(lead.id)}>
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center font-bold text-xs text-hormur-deep/70 shrink-0">
-                          {lead.first_name[0]}{lead.last_name[0]}
+                          {(lead.first_name || '?')[0]}{(lead.last_name || '')[0]}
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-sm truncate group-hover:text-hormur-terracotta transition-colors">{lead.first_name} {lead.last_name}</p>
