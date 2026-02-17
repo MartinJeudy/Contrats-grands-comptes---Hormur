@@ -805,7 +805,7 @@
     // PROSPECTS VIEW (Import CSV)
     // ============================================
     const ProspectsView = () => {
-      const { prospects, refreshProspects, showToast } = useApp();
+      const { prospects, user, refreshProspects, showToast } = useApp();
       const [search, setSearch] = useState('');
       const [filterStatus, setFilterStatus] = useState('all');
       const [showImport, setShowImport] = useState(false);
