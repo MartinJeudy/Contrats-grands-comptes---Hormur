@@ -747,28 +747,28 @@
       const hotLeads = prospects.filter(p => p.status === 'REPLIED' && !p.assigned_to).slice(0, 5);
 
       return (
-        <div className="space-y-8">
+        <div className="flex flex-col gap-6" style={{ height: 'calc(100vh - 160px)' }}>
           {/* Welcome Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 shrink-0">
             <div>
               <p className="text-hormur-deep/60 font-medium mb-1">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
               <h1 className="font-display text-3xl md:text-4xl font-bold">Bonjour, {user.name.split(' ')[0]} 👋</h1>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setCurrentView('prospects')} className="btn-secondary px-5 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2"><Icon name="Upload" size={18} />Import CSV</button>
+              <button onClick={() => setCurrentView('prospects')} className="bg-[#2D3339] text-white hover:bg-[#1a1e22] px-5 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-colors"><Icon name="Upload" size={18} />Import CSV</button>
               <button onClick={() => setCurrentView('pipeline')} className="btn-primary px-5 py-2.5 rounded-xl text-white text-sm font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"><Icon name="Kanban" size={18} />Mon Pipeline</button>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
             {[
               { label: 'Nouvelles réponses', value: stats.newReplies, icon: 'Flame', color: 'text-amber-500', bg: 'bg-amber-500/10' },
               { label: 'Mes négos actives', value: stats.myActive, icon: 'MessageSquare', color: 'text-hormur-terracotta', bg: 'bg-hormur-terracotta/10' },
               { label: 'RDV planifiés', value: stats.myRdv, icon: 'Calendar', color: 'text-hormur-forest', bg: 'bg-hormur-forest/10' },
               { label: 'Contrats signés', value: stats.mySigned, icon: 'Trophy', color: 'text-green-600', bg: 'bg-green-500/10' },
             ].map((s, i) => (
-              <div key={i} className="glass-card rounded-3xl p-6 lg:p-8 hover:-translate-y-2 transition-transform duration-300">
+              <div key={i} className="glass-card rounded-2xl p-5 hover:-translate-y-1 transition-transform duration-300">
                 <div className="flex items-center gap-4 mb-4">
                   <div className={`w-12 h-12 ${s.bg} rounded-2xl flex items-center justify-center shadow-sm`}><Icon name={s.icon} size={24} className={s.color} /></div>
                   <span className="text-sm font-medium text-hormur-deep/60">{s.label}</span>
@@ -778,14 +778,14 @@
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-6 flex-1 min-h-0">
             {/* Hot Leads */}
-            <div className="glass-card rounded-3xl p-8 min-h-[500px] flex flex-col">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-amber-100 rounded-xl"><Icon name="Flame" size={24} className="text-amber-600" /></div>
+            <div className="glass-card rounded-3xl p-6 flex flex-col h-full overflow-hidden">
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-amber-100 rounded-lg"><Icon name="Flame" size={20} className="text-amber-600" /></div>
                   <div>
-                    <h2 className="font-display text-xl font-bold">Leads chauds</h2>
+                    <h2 className="font-display text-lg font-bold">Leads chauds</h2>
                     <p className="text-xs text-hormur-deep/50">Dernières réponses reçues</p>
                   </div>
                 </div>
@@ -794,20 +794,20 @@
 
               {hotLeads.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
-                  <div className="w-20 h-20 bg-hormur-sand/30 rounded-full flex items-center justify-center mb-4"><Icon name="Inbox" size={32} /></div>
-                  <p className="font-medium">Aucun nouveau lead pour le moment</p>
+                  <div className="w-14 h-14 bg-hormur-sand/30 rounded-full flex items-center justify-center mb-3"><Icon name="Inbox" size={24} /></div>
+                  <p className="font-medium text-sm">Aucun nouveau lead</p>
                   <p className="text-sm mt-1">C'est calme... trop calme.</p>
                 </div>
               ) : (
-                <div className="space-y-4 flex-1">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                   {hotLeads.map(lead => (
-                    <div key={lead.id} className="group flex items-center justify-between p-5 bg-white border border-hormur-sand/50 rounded-2xl hover:border-hormur-terracotta/30 hover:shadow-md transition-all cursor-pointer" onClick={() => claimLead(lead.id)}>
-                      <div className="flex items-center gap-4 overflow-hidden">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center font-bold text-hormur-deep/70 shrink-0">
+                    <div key={lead.id} className="group flex items-center justify-between p-3 bg-white border border-hormur-sand/50 rounded-xl hover:border-hormur-terracotta/30 hover:shadow-sm transition-all cursor-pointer" onClick={() => claimLead(lead.id)}>
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center font-bold text-xs text-hormur-deep/70 shrink-0">
                           {lead.first_name[0]}{lead.last_name[0]}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold truncate group-hover:text-hormur-terracotta transition-colors">{lead.first_name} {lead.last_name}</p>
+                          <p className="font-bold text-sm truncate group-hover:text-hormur-terracotta transition-colors">{lead.first_name} {lead.last_name}</p>
                           <p className="text-sm text-hormur-deep/60 truncate">{lead.company}</p>
                         </div>
                       </div>
@@ -819,26 +819,26 @@
             </div>
 
             {/* Quick Actions */}
-            <div className="glass-card rounded-3xl p-8 min-h-[500px] flex flex-col">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-2.5 bg-hormur-sand rounded-xl"><Icon name="Zap" size={24} className="text-hormur-deep/70" /></div>
+            <div className="glass-card rounded-3xl p-6 flex flex-col h-full overflow-hidden">
+              <div className="flex items-center gap-2 mb-4 shrink-0">
+                <div className="p-2 bg-hormur-sand rounded-lg"><Icon name="Zap" size={20} className="text-hormur-deep/70" /></div>
                 <div>
-                  <h2 className="font-display text-xl font-bold">Actions rapides</h2>
-                  <p className="text-xs text-hormur-deep/50">Raccourcis vers vos outils</p>
+                  <h2 className="font-display text-lg font-bold">Actions rapides</h2>
+                  <p className="text-xs text-hormur-deep/50">Raccourcis</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1 content-start">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start overflow-y-auto pr-2 custom-scrollbar">
                 {[
                   { label: 'Gérer mon pipeline', desc: 'Voir mes opportunités', icon: 'Kanban', color: 'text-hormur-terracotta', bg: 'bg-hormur-terracotta/10', view: 'pipeline' },
                   { label: 'Importer des prospects', desc: 'Ajouter via CSV', icon: 'Upload', color: 'text-hormur-forest', bg: 'bg-hormur-forest/10', view: 'prospects' },
                   { label: 'Consulter le classement', desc: 'Voir mes performances', icon: 'Trophy', color: 'text-amber-500', bg: 'bg-amber-500/10', view: 'leaderboard' },
                   { label: 'Mon profil & Paramètres', desc: 'Modifier mon lien Calendly', icon: 'Settings', color: 'text-hormur-sage', bg: 'bg-hormur-sage/20', view: 'profile' },
                 ].map((a, i) => (
-                  <button key={i} onClick={() => setCurrentView(a.view)} className="flex items-start gap-4 p-6 bg-white border border-hormur-sand/50 rounded-2xl hover:border-hormur-terracotta/30 hover:shadow-md hover:-translate-y-1 transition-all text-left group h-full">
-                    <div className={`p-3 ${a.bg} rounded-xl group-hover:scale-110 transition-transform`}><Icon name={a.icon} size={24} className={a.color} /></div>
+                  <button key={i} onClick={() => setCurrentView(a.view)} className="flex items-start gap-3 p-4 bg-white border border-hormur-sand/50 rounded-xl hover:border-hormur-terracotta/30 hover:shadow-md hover:-translate-y-1 transition-all text-left group">
+                    <div className={`p-2 ${a.bg} rounded-lg group-hover:scale-110 transition-transform`}><Icon name={a.icon} size={20} className={a.color} /></div>
                     <div>
-                      <p className="font-bold text-lg mb-1 group-hover:text-hormur-terracotta transition-colors">{a.label}</p>
+                      <p className="font-bold text-sm mb-0.5 group-hover:text-hormur-terracotta transition-colors">{a.label}</p>
                       <p className="text-sm text-hormur-deep/50 leading-tight">{a.desc}</p>
                     </div>
                   </button>
