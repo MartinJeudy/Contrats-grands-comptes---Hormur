@@ -8,11 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase SDK: CDN principal + fallback -->
+  <!-- Supabase SDK - utilisation de jsDelivr (plus fiable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    if (window.tailwindcss) tailwindcss.config = {
+    tailwindcss.config = {
       theme: {
         extend: {
           fontFamily: { 'display': ['Fraunces', 'serif'], 'sans': ['DM Sans', 'system-ui', 'sans-serif'] },
@@ -24,8 +23,7 @@
           }
         }
       }
-    };
-    else console.warn('Tailwind CDN non chargé (styles custom possibles, mais app fonctionnelle).');
+    }
   </script>
   <style>
     * { -webkit-font-smoothing: antialiased; }
@@ -84,23 +82,40 @@
       UNIPILE_ACCOUNT_ID: 'K3CniNpFRS2GBzOjMzL5sg',
     };
     
-    // Initialisation Supabase
+    // Initialisation Supabase avec fallbacks
     let supabase = null;
-    let supabaseInitError = '';
-
-    const initSupabaseClient = () => {
+    const initSupabase = () => {
+      // Chercher le SDK Supabase (différents noms possibles selon la version)
+      const SupabaseLib = window.supabase || window.Supabase;
+      
+      if (!SupabaseLib) {
+        console.error('Supabase SDK non chargé. Vérifiez votre connexion internet.');
+        return null;
+      }
+      
+      // Le SDK peut exposer createClient directement ou via un objet
+      const createClient = SupabaseLib.createClient || (SupabaseLib.default && SupabaseLib.default.createClient);
+      
+      if (!createClient) {
+        console.error('Supabase createClient non trouvé.');
+        return null;
+      }
+      
+      // Vérifier que les credentials sont configurés
+      if (CONFIG.SUPABASE_URL.includes('VOTRE_PROJET') || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
+        console.error('Supabase: Configurez config.js avec vos vraies valeurs !');
+        return null;
+      }
+      
       try {
-        const supabaseLib = window.supabase || window.supabaseJs || window.supabasejs || window.Supabase;
-        if (!supabaseLib?.createClient) throw new Error('SDK Supabase introuvable (CDN bloqué ou non chargé)');
-        return supabaseLib.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
       } catch (e) {
-        supabaseInitError = e?.message || 'Erreur inconnue';
-        console.error('Supabase init error:', e);
+        console.error('Erreur création client Supabase:', e);
         return null;
       }
     };
-
-    supabase = initSupabaseClient();
+    
+    supabase = initSupabase();
     
     // ============================================
     // CONSTANTES
@@ -232,20 +247,22 @@
         e.preventDefault();
         setError('');
         setLoading(true);
+        
+        // Vérifier que Supabase est initialisé
+        if (!supabase) {
+          setError('Erreur de configuration. Vérifiez config.js et rechargez la page.');
+          setLoading(false);
+          return;
+        }
+        
         try {
-          if (!supabase) {
-            supabase = initSupabaseClient();
-          }
-          if (!supabase) {
-            throw new Error(`Connexion indisponible: ${supabaseInitError || 'Supabase non initialisé'}`);
-          }
           const { data, error: dbErr } = await supabase.from('users').select('*').eq('email', email.toLowerCase().trim()).single();
           if (dbErr || !data) { setError('Compte non trouvé'); setLoading(false); return; }
           if (data.password_hash !== password) { setError('Mot de passe incorrect'); setLoading(false); return; }
           if (!data.active) { setError('Compte désactivé'); setLoading(false); return; }
           localStorage.setItem('hormur_user', JSON.stringify(data));
           onLogin(data);
-        } catch (err) { setError('Erreur de connexion'); console.error(err); }
+        } catch (err) { setError('Erreur de connexion. Vérifiez votre configuration Supabase.'); console.error(err); }
         setLoading(false);
       };
       
@@ -469,7 +486,145 @@
               <div ref={messagesEndRef} />
             </div>
             
-            {/…2198 tokens truncated…yRdv, icon: 'Calendar', color: 'text-hormur-forest', bg: 'bg-hormur-forest/10' },
+            {/* Input */}
+            <div className="border-t border-hormur-sand/50 p-4">
+              {showTemplates && (
+                <div className="mb-3 max-h-48 overflow-y-auto bg-hormur-cream/50 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-hormur-deep/60 mb-2 uppercase">Templates</p>
+                  <div className="grid gap-2">
+                    {templates.map(t => (
+                      <button key={t.id} onClick={() => applyTemplate(t)} className="template-card text-left p-3 bg-white/60 rounded-lg transition-all">
+                        <p className="font-medium text-sm">{t.title}</p>
+                        <p className="text-xs text-hormur-deep/50 truncate">{t.content.substring(0, 50)}...</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <button onClick={() => setShowTemplates(!showTemplates)} className={`p-3 rounded-xl transition-colors ${showTemplates ? 'bg-hormur-terracotta text-white' : 'bg-hormur-cream/50 hover:bg-hormur-sand/50'}`}><Icon name="FileText" size={20} /></button>
+                <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}} placeholder="Écrire un message... (Entrée pour envoyer)" className="input-field flex-1 px-4 py-3 rounded-xl resize-none" rows={2} />
+                <button onClick={sendMessage} disabled={!newMessage.trim() || sending} className="btn-primary px-4 rounded-xl text-white">
+                  {sending ? <Spinner size="sm" /> : <Icon name="Send" size={20} />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+    
+    // ============================================
+    // PIPELINE VIEW (Drag & Drop)
+    // ============================================
+    const PipelineView = () => {
+      const { prospects, user, claimLead, updateProspectStatus } = useApp();
+      const [selectedProspect, setSelectedProspect] = useState(null);
+      const [draggedItem, setDraggedItem] = useState(null);
+      
+      const pipelineData = useMemo(() => {
+        const stages = {};
+        PIPELINE_STAGES.forEach(status => {
+          stages[status] = prospects.filter(p => {
+            if (status === 'REPLIED') return p.status === 'REPLIED' && !p.assigned_to;
+            return p.status === status && p.assigned_to === user.id;
+          });
+        });
+        return stages;
+      }, [prospects, user.id]);
+      
+      const handleDragStart = (e, p) => { setDraggedItem(p); e.currentTarget.classList.add('dragging'); };
+      const handleDragEnd = (e) => { e.currentTarget.classList.remove('dragging'); setDraggedItem(null); document.querySelectorAll('.pipeline-column').forEach(c => c.classList.remove('drag-over')); };
+      const handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
+      const handleDragLeave = (e) => { e.currentTarget.classList.remove('drag-over'); };
+      const handleDrop = async (e, newStatus) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (!draggedItem || draggedItem.status === newStatus) return;
+        if (draggedItem.status === 'REPLIED' && !draggedItem.assigned_to) {
+          await claimLead(draggedItem.id);
+          if (newStatus !== 'REPLIED' && newStatus !== 'ASSIGNED') await updateProspectStatus(draggedItem.id, newStatus);
+        } else {
+          await updateProspectStatus(draggedItem.id, newStatus);
+        }
+      };
+      
+      if (selectedProspect) return <ConversationView prospect={selectedProspect} onBack={() => setSelectedProspect(null)} />;
+      
+      return (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="font-display text-2xl font-bold">Mon Pipeline</h1>
+            <div className="text-sm text-hormur-deep/60">{Object.values(pipelineData).flat().length} prospects actifs</div>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {PIPELINE_STAGES.map(status => {
+              const items = pipelineData[status] || [];
+              const cfg = STATUSES[status];
+              return (
+                <div key={status} className="pipeline-column min-w-[300px] flex-shrink-0" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={(e) => handleDrop(e, status)}>
+                  <div className="glass-card rounded-2xl p-4 min-h-[450px]">
+                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-hormur-sand/50">
+                      <span className={`w-3 h-3 rounded-full ${cfg.color}`}></span>
+                      <span className="font-semibold text-hormur-deep">{cfg.label}</span>
+                      <span className="ml-auto text-sm text-hormur-deep/50 bg-hormur-sand/30 px-2 py-0.5 rounded-full">{items.length}</span>
+                    </div>
+                    <div className="space-y-3">
+                      {items.map(lead => {
+                        const canDrag = lead.assigned_to === user.id || (status === 'REPLIED' && !lead.assigned_to);
+                        return (
+                          <div key={lead.id} draggable={canDrag} onDragStart={canDrag ? (e) => handleDragStart(e, lead) : undefined} onDragEnd={canDrag ? handleDragEnd : undefined} onClick={() => setSelectedProspect(lead)} className="lead-card bg-white/80 rounded-xl p-4 cursor-pointer">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{lead.first_name} {lead.last_name}</p>
+                                <p className="text-sm text-hormur-deep/60 truncate">{lead.company}</p>
+                              </div>
+                              {lead.message_count > 0 && <span className="flex items-center gap-1 bg-hormur-terracotta/10 text-hormur-terracotta text-xs px-2 py-0.5 rounded-full ml-2"><Icon name="MessageSquare" size={10} />{lead.message_count}</span>}
+                            </div>
+                            {lead.last_message_content && <p className="text-xs text-hormur-deep/50 truncate mb-2 italic">"{lead.last_message_content.substring(0, 40)}..."</p>}
+                            {lead.last_update && <p className="text-xs text-hormur-deep/40">{formatRelativeTime(lead.last_update)}</p>}
+                            {status === 'REPLIED' && !lead.assigned_to && (
+                              <button onClick={(e) => { e.stopPropagation(); claimLead(lead.id); }} className="w-full mt-3 btn-primary py-2 rounded-lg text-white text-sm font-medium">Prendre ce lead</button>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {items.length === 0 && <div className="text-center py-8 text-hormur-deep/30"><Icon name="Inbox" size={32} className="mx-auto mb-2 opacity-50" /><p className="text-sm">{status === 'REPLIED' ? 'Aucun nouveau lead' : 'Glissez ici'}</p></div>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+    
+    // ============================================
+    // DASHBOARD VIEW
+    // ============================================
+    const DashboardView = () => {
+      const { prospects, user, claimLead, setCurrentView } = useApp();
+      const stats = useMemo(() => {
+        const my = prospects.filter(p => p.assigned_to === user.id);
+        return {
+          newReplies: prospects.filter(p => p.status === 'REPLIED' && !p.assigned_to).length,
+          myActive: my.filter(p => ['ASSIGNED', 'EN_NEGO', 'RDV_PRIS', 'CONTRAT_EN_COURS'].includes(p.status)).length,
+          myRdv: my.filter(p => p.status === 'RDV_PRIS').length,
+          mySigned: my.filter(p => p.status === 'SIGNE').length,
+        };
+      }, [prospects, user.id]);
+      
+      const hotLeads = prospects.filter(p => p.status === 'REPLIED' && !p.assigned_to).slice(0, 5);
+      
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Nouvelles réponses', value: stats.newReplies, icon: 'Flame', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+              { label: 'Mes négos actives', value: stats.myActive, icon: 'MessageSquare', color: 'text-hormur-terracotta', bg: 'bg-hormur-terracotta/10' },
+              { label: 'RDV planifiés', value: stats.myRdv, icon: 'Calendar', color: 'text-hormur-forest', bg: 'bg-hormur-forest/10' },
               { label: 'Contrats signés', value: stats.mySigned, icon: 'Trophy', color: 'text-green-600', bg: 'bg-green-500/10' },
             ].map((s, i) => (
               <div key={i} className="glass-card rounded-2xl p-5 hover:-translate-y-1 transition-transform">
