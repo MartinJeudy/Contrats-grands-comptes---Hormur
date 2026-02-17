@@ -433,6 +433,7 @@
         { id: 'dashboard', icon: 'LayoutDashboard', label: 'Dashboard' },
         { id: 'pipeline', icon: 'Kanban', label: 'Pipeline', badge: unreadCount },
         { id: 'prospects', icon: 'Users', label: 'Prospects' },
+        { id: 'campaigns', icon: 'MessageSquare', label: 'Séquences' },
         { id: 'leaderboard', icon: 'Trophy', label: 'Classement' },
       ];
       if (user.role === 'admin') navItems.push({ id: 'admin', icon: 'Settings', label: 'Admin' });
@@ -1137,6 +1138,121 @@
     };
 
     // ============================================
+    // CAMPAIGNS VIEW
+    // ============================================
+    const CampaignsView = () => {
+      const { user, showToast } = useApp();
+      const [templates, setTemplates] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [editingId, setEditingId] = useState(null);
+      const [editForm, setEditForm] = useState({});
+      const [saving, setSaving] = useState(false);
+
+      useEffect(() => {
+        loadTemplates();
+      }, []);
+
+      const loadTemplates = async () => {
+        const { data } = await supabase.from('campaign_templates').select('*').order('step_name');
+        setTemplates(data || []);
+        setLoading(false);
+      };
+
+      const startEdit = (t) => {
+        setEditingId(t.id);
+        setEditForm({ content: t.content, subject: t.subject });
+      };
+
+      const cancelEdit = () => {
+        setEditingId(null);
+        setEditForm({});
+      };
+
+      const saveEdit = async (id) => {
+        setSaving(true);
+        try {
+          const { error } = await supabase.from('campaign_templates').update({
+            content: editForm.content,
+            subject: editForm.subject,
+            updated_at: new Date().toISOString()
+          }).eq('id', id);
+          if (error) throw error;
+
+          setTemplates(prev => prev.map(t => t.id === id ? { ...t, ...editForm } : t));
+          setEditingId(null);
+          showToast('Modèle mis à jour !');
+        } catch (err) {
+          console.error(err);
+          showToast('Erreur lors de la sauvegarde', 'error');
+        }
+        setSaving(false);
+      };
+
+      return (
+        <div className="max-w-4xl mx-auto">
+          <h1 className="font-display text-2xl font-bold mb-2">Séquence de prospection</h1>
+          <p className="text-hormur-deep/60 mb-8">Ces messages sont envoyés automatiquement par nos automations. Les commerciaux peuvent les consulter pour référence.</p>
+
+          <div className="space-y-6">
+            {loading ? <div className="flex justify-center p-12"><Spinner /></div> : templates.map((t, idx) => (
+              <div key={t.id} className="glass-card rounded-2xl p-6 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-hormur-terracotta to-hormur-rust"></div>
+
+                <div className="flex items-start justify-between mb-4 pl-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="px-2 py-1 bg-hormur-sand/50 rounded-lg text-xs font-bold uppercase tracking-wider text-hormur-deep/70">{t.step_name}</span>
+                      <span className="text-xs text-hormur-deep/50 flex items-center gap-1"><Icon name="Clock" size={12} />J+{t.delay_days}</span>
+                    </div>
+                    {editingId === t.id ? (
+                      <input
+                        type="text"
+                        value={editForm.subject || ''}
+                        onChange={e => setEditForm(prev => ({ ...prev, subject: e.target.value }))}
+                        className="input-field px-3 py-1.5 rounded-lg text-lg font-semibold w-full mt-2"
+                        placeholder="Objet du message..."
+                      />
+                    ) : (
+                      <h3 className="text-lg font-semibold">{t.subject || 'Sans objet'}</h3>
+                    )}
+                  </div>
+
+                  {user.role === 'admin' && (
+                    <div className="flex items-center gap-2">
+                      {editingId === t.id ? (
+                        <>
+                          <button onClick={cancelEdit} disabled={saving} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"><Icon name="X" size={18} /></button>
+                          <button onClick={() => saveEdit(t.id)} disabled={saving} className="p-2 bg-hormur-terracotta text-white rounded-lg hover:bg-hormur-rust transition-colors shadow-sm icon-btn-hover">
+                            {saving ? <Spinner size="sm" /> : <Icon name="Check" size={18} />}
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => startEdit(t)} className="p-2 hover:bg-hormur-sand/50 rounded-lg text-hormur-deep/40 hover:text-hormur-deep transition-colors opacity-0 group-hover:opacity-100"><Icon name="Edit2" size={16} /></button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pl-4">
+                  {editingId === t.id ? (
+                    <textarea
+                      value={editForm.content}
+                      onChange={e => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+                      className="input-field w-full rounded-xl p-4 min-h-[150px] text-sm font-mono leading-relaxed"
+                    />
+                  ) : (
+                    <div className="bg-hormur-cream/50 rounded-xl p-4 text-sm text-hormur-deep/80 whitespace-pre-wrap font-mono border border-hormur-sand/30">
+                      {t.content}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
     // ADMIN VIEW
     // ============================================
     const AdminView = () => {
@@ -1277,6 +1393,7 @@
               {currentView === 'prospects' && <ProspectsView />}
               {currentView === 'leaderboard' && <LeaderboardView />}
               {currentView === 'profile' && <ProfileView />}
+              {currentView === 'campaigns' && <CampaignsView />}
               {currentView === 'admin' && user.role === 'admin' && <AdminView />}
             </main>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
