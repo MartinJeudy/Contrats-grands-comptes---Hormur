@@ -11,7 +11,8 @@
   <!-- Supabase SDK - utilisation de jsDelivr (plus fiable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    tailwindcss.config = {
+    // FIX 1: Tailwind config doit utiliser "tailwind.config" et non "tailwindcss.config"
+    tailwind.config = {
       theme: {
         extend: {
           fontFamily: { 'display': ['Fraunces', 'serif'], 'sans': ['DM Sans', 'system-ui', 'sans-serif'] },
@@ -72,8 +73,6 @@
     
     // ============================================
     // CONFIGURATION
-    // Les clés Supabase sont conçues pour être publiques (sécurisées par RLS)
-    // L'API Unipile reste côté n8n (jamais exposée au frontend)
     // ============================================
     const CONFIG = {
       SUPABASE_URL: window.SUPABASE_URL || 'https://VOTRE_PROJET.supabase.co',
@@ -82,40 +81,35 @@
       UNIPILE_ACCOUNT_ID: 'K3CniNpFRS2GBzOjMzL5sg',
     };
     
-    // Initialisation Supabase avec fallbacks
-    let supabase = null;
+    // FIX 2: Initialisation Supabase robuste
+    // Le SDK jsDelivr UMD expose window.supabase.createClient
     const initSupabase = () => {
-      // Chercher le SDK Supabase (différents noms possibles selon la version)
-      const SupabaseLib = window.supabase || window.Supabase;
-      
-      if (!SupabaseLib) {
-        console.error('Supabase SDK non chargé. Vérifiez votre connexion internet.');
-        return null;
-      }
-      
-      // Le SDK peut exposer createClient directement ou via un objet
-      const createClient = SupabaseLib.createClient || (SupabaseLib.default && SupabaseLib.default.createClient);
-      
-      if (!createClient) {
-        console.error('Supabase createClient non trouvé.');
-        return null;
-      }
-      
       // Vérifier que les credentials sont configurés
-      if (CONFIG.SUPABASE_URL.includes('VOTRE_PROJET') || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
+      if (!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes('VOTRE_PROJET') ||
+          !CONFIG.SUPABASE_ANON_KEY || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
         console.error('Supabase: Configurez config.js avec vos vraies valeurs !');
         return null;
       }
-      
+
+      // Le SDK UMD de jsDelivr expose window.supabase avec createClient dedans
       try {
-        return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          return window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        }
+        // Fallback : certaines versions exposent directement createClient
+        if (typeof window.createClient === 'function') {
+          return window.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        }
+        console.error('Supabase SDK introuvable. Vérifiez votre connexion internet.');
+        return null;
       } catch (e) {
         console.error('Erreur création client Supabase:', e);
         return null;
       }
     };
     
-    supabase = initSupabase();
+    // FIX 3: supabase initialisé une seule fois, au bon moment
+    const supabase = initSupabase();
     
     // ============================================
     // CONSTANTES
@@ -248,7 +242,6 @@
         setError('');
         setLoading(true);
         
-        // Vérifier que Supabase est initialisé
         if (!supabase) {
           setError('Erreur de configuration. Vérifiez config.js et rechargez la page.');
           setLoading(false);
@@ -386,7 +379,6 @@
       
       useEffect(() => {
         loadMessages();
-        // Realtime subscription
         const sub = supabase.channel(`msg-${prospect.id}`)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `prospect_id=eq.${prospect.id}` }, 
             (payload) => setMessages(prev => prev.find(m => m.id === payload.new.id) ? prev : [...prev, payload.new]))
@@ -414,14 +406,12 @@
         if (!newMessage.trim() || sending) return;
         setSending(true);
         try {
-          // 1. Insert en base
           const { data: msgData, error: insertErr } = await supabase.from('messages').insert({
             prospect_id: prospect.id, content: newMessage.trim(), direction: 'outgoing',
             sender_id: user.id, sender_name: user.name, status: 'pending', sent_at: new Date().toISOString()
           }).select().single();
           if (insertErr) throw insertErr;
           
-          // 2. Envoyer via n8n → Unipile
           const res = await fetch(CONFIG.N8N_WEBHOOK_SEND, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -433,7 +423,6 @@
           });
           if (!res.ok) throw new Error('Erreur n8n');
           
-          // 3. Update status
           await supabase.from('messages').update({ status: 'sent' }).eq('id', msgData.id);
           await supabase.from('activity_log').insert({ user_id: user.id, prospect_id: prospect.id, action: 'message_sent' });
           
@@ -448,7 +437,6 @@
       
       return (
         <div className="flex flex-col h-[calc(100vh-8rem)]">
-          {/* Header */}
           <div className="glass-card rounded-2xl p-4 mb-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button onClick={onBack} className="p-2 hover:bg-hormur-sand/50 rounded-xl"><Icon name="ArrowLeft" size={20} /></button>
@@ -465,7 +453,6 @@
             </div>
           </div>
           
-          {/* Messages */}
           <div className="glass-card rounded-2xl flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {loading ? <div className="flex justify-center py-8"><Spinner /></div> : messages.length === 0 ? (
@@ -486,7 +473,6 @@
               <div ref={messagesEndRef} />
             </div>
             
-            {/* Input */}
             <div className="border-t border-hormur-sand/50 p-4">
               {showTemplates && (
                 <div className="mb-3 max-h-48 overflow-y-auto bg-hormur-cream/50 rounded-xl p-3">
@@ -1016,9 +1002,8 @@
       }, []);
       
       useEffect(() => {
-        if (user) {
+        if (user && supabase) {
           loadData();
-          // Realtime
           const sub = supabase.channel('prospects-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'prospects' }, loadProspects).subscribe();
           return () => sub.unsubscribe();
         }
