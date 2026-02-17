@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK - utilisation de jsDelivr (plus fiable) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     tailwindcss.config = {
       theme: {
@@ -81,10 +82,40 @@
       UNIPILE_ACCOUNT_ID: 'K3CniNpFRS2GBzOjMzL5sg',
     };
     
-    // Initialisation Supabase
+    // Initialisation Supabase avec fallbacks
     let supabase = null;
-    try { supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); } 
-    catch (e) { console.error('Supabase init error:', e); }
+    const initSupabase = () => {
+      // Chercher le SDK Supabase (différents noms possibles selon la version)
+      const SupabaseLib = window.supabase || window.Supabase;
+      
+      if (!SupabaseLib) {
+        console.error('Supabase SDK non chargé. Vérifiez votre connexion internet.');
+        return null;
+      }
+      
+      // Le SDK peut exposer createClient directement ou via un objet
+      const createClient = SupabaseLib.createClient || (SupabaseLib.default && SupabaseLib.default.createClient);
+      
+      if (!createClient) {
+        console.error('Supabase createClient non trouvé.');
+        return null;
+      }
+      
+      // Vérifier que les credentials sont configurés
+      if (CONFIG.SUPABASE_URL.includes('VOTRE_PROJET') || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
+        console.error('Supabase: Configurez config.js avec vos vraies valeurs !');
+        return null;
+      }
+      
+      try {
+        return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+      } catch (e) {
+        console.error('Erreur création client Supabase:', e);
+        return null;
+      }
+    };
+    
+    supabase = initSupabase();
     
     // ============================================
     // CONSTANTES
@@ -216,6 +247,14 @@
         e.preventDefault();
         setError('');
         setLoading(true);
+        
+        // Vérifier que Supabase est initialisé
+        if (!supabase) {
+          setError('Erreur de configuration. Vérifiez config.js et rechargez la page.');
+          setLoading(false);
+          return;
+        }
+        
         try {
           const { data, error: dbErr } = await supabase.from('users').select('*').eq('email', email.toLowerCase().trim()).single();
           if (dbErr || !data) { setError('Compte non trouvé'); setLoading(false); return; }
@@ -223,7 +262,7 @@
           if (!data.active) { setError('Compte désactivé'); setLoading(false); return; }
           localStorage.setItem('hormur_user', JSON.stringify(data));
           onLogin(data);
-        } catch (err) { setError('Erreur de connexion'); console.error(err); }
+        } catch (err) { setError('Erreur de connexion. Vérifiez votre configuration Supabase.'); console.error(err); }
         setLoading(false);
       };
       
