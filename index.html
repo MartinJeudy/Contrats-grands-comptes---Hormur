@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hormur Sales — Prospection Grands Comptes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase SDK - utilisation de jsDelivr (plus fiable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -27,50 +30,183 @@
     }
   </script>
   <style>
-    * { -webkit-font-smoothing: antialiased; }
-    body { background: linear-gradient(135deg, #FDF8F3 0%, #E8DDD4 100%); min-height: 100vh; }
-    .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.8); }
-    .status-badge { font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
-    .btn-primary { background: linear-gradient(135deg, #C4704B 0%, #A85632 100%); transition: all 0.3s ease; }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(196, 112, 75, 0.3); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: linear-gradient(135deg, #2C4A3E 0%, #1a2d26 100%); }
-    .btn-ghost { background: transparent; border: 2px solid rgba(45, 41, 38, 0.2); }
-    .btn-ghost:hover { border-color: #C4704B; background: rgba(196, 112, 75, 0.1); }
-    .input-field { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(45, 41, 38, 0.1); transition: all 0.3s ease; }
-    .input-field:focus { border-color: #C4704B; box-shadow: 0 0 0 3px rgba(196, 112, 75, 0.1); outline: none; }
-    .lead-card { transition: all 0.3s ease; }
-    .lead-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(45, 41, 38, 0.15); }
-    .lead-card.dragging { opacity: 0.5; transform: rotate(2deg) scale(1.02); cursor: grabbing; }
-    .lead-card[draggable="true"] { cursor: grab; }
-    .pipeline-column.drag-over { background: rgba(196, 112, 75, 0.08); border: 2px dashed rgba(196, 112, 75, 0.4); border-radius: 1rem; }
-    .nav-item.active::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: #C4704B; border-radius: 2px; }
-    .message-bubble { max-width: 80%; word-wrap: break-word; }
-    .message-bubble.incoming { background: #f5f5f5; border-radius: 18px 18px 18px 4px; }
-    .message-bubble.outgoing { background: linear-gradient(135deg, #C4704B 0%, #A85632 100%); color: white; border-radius: 18px 18px 4px 18px; }
-    .toast { animation: slideUp 0.4s ease-out; }
-    @keyframes slideUp { 0% { opacity: 0; transform: translate(-50%, 20px); } 100% { opacity: 1; transform: translate(-50%, 0); } }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(232, 221, 212, 0.5); }
-    ::-webkit-scrollbar-thumb { background: rgba(196, 112, 75, 0.4); border-radius: 3px; }
-    @media (max-width: 768px) { .mobile-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; } }
-    .template-card:hover { background: rgba(196, 112, 75, 0.1); transform: translateX(4px); }
+    * {
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FDF8F3 0%, #E8DDD4 100%);
+      min-height: 100vh;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .status-badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #C4704B 0%, #A85632 100%);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(196, 112, 75, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #2C4A3E 0%, #1a2d26 100%);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 2px solid rgba(45, 41, 38, 0.2);
+    }
+
+    .btn-ghost:hover {
+      border-color: #C4704B;
+      background: rgba(196, 112, 75, 0.1);
+    }
+
+    .input-field {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(45, 41, 38, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .input-field:focus {
+      border-color: #C4704B;
+      box-shadow: 0 0 0 3px rgba(196, 112, 75, 0.1);
+      outline: none;
+    }
+
+    .lead-card {
+      transition: all 0.3s ease;
+    }
+
+    .lead-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(45, 41, 38, 0.15);
+    }
+
+    .lead-card.dragging {
+      opacity: 0.5;
+      transform: rotate(2deg) scale(1.02);
+      cursor: grabbing;
+    }
+
+    .lead-card[draggable="true"] {
+      cursor: grab;
+    }
+
+    .pipeline-column.drag-over {
+      background: rgba(196, 112, 75, 0.08);
+      border: 2px dashed rgba(196, 112, 75, 0.4);
+      border-radius: 1rem;
+    }
+
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 3px;
+      background: #C4704B;
+      border-radius: 2px;
+    }
+
+    .message-bubble {
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .message-bubble.incoming {
+      background: #f5f5f5;
+      border-radius: 18px 18px 18px 4px;
+    }
+
+    .message-bubble.outgoing {
+      background: linear-gradient(135deg, #C4704B 0%, #A85632 100%);
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .toast {
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(232, 221, 212, 0.5);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(196, 112, 75, 0.4);
+      border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+      }
+    }
+
+    .template-card:hover {
+      background: rgba(196, 112, 75, 0.1);
+      transform: translateX(4px);
+    }
   </style>
 </head>
+
 <body class="font-sans text-hormur-deep">
   <div id="root"></div>
-  
+
   <!-- Configuration - Modifiez config.js avec vos credentials -->
   <script src="config.js"></script>
-  
+
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-  
+
   <script type="text/babel">
     const { useState, useEffect, useCallback, createContext, useContext, useMemo, useRef } = React;
-    
+
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -81,13 +217,13 @@
       N8N_WEBHOOK_IMPORT: window.N8N_WEBHOOK_IMPORT || 'https://n8n.srv971805.hstgr.cloud/webhook/61df4721-2044-4fa9-b1b7-9b45414c957e',
       UNIPILE_ACCOUNT_ID: 'K3CniNpFRS2GBzOjMzL5sg',
     };
-    
+
     // FIX 2: Initialisation Supabase robuste
     // Le SDK jsDelivr UMD expose window.supabase.createClient
     const initSupabase = () => {
       // Vérifier que les credentials sont configurés
       if (!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes('VOTRE_PROJET') ||
-          !CONFIG.SUPABASE_ANON_KEY || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
+        !CONFIG.SUPABASE_ANON_KEY || CONFIG.SUPABASE_ANON_KEY.includes('VOTRE_ANON')) {
         console.error('Supabase: Configurez config.js avec vos vraies valeurs !');
         return null;
       }
@@ -108,10 +244,10 @@
         return null;
       }
     };
-    
+
     // FIX 3: supabase initialisé une seule fois, au bon moment
     const supabase = initSupabase();
-    
+
     // ============================================
     // CONSTANTES
     // ============================================
@@ -130,9 +266,9 @@
       SIGNE: { label: '🎉 Signé', color: 'bg-green-600', textColor: 'text-white' },
       PERDU: { label: 'Perdu', color: 'bg-red-500', textColor: 'text-white' },
     };
-    
+
     const PIPELINE_STAGES = ['REPLIED', 'ASSIGNED', 'EN_NEGO', 'RDV_PRIS', 'CONTRAT_EN_COURS', 'SIGNE', 'PERDU'];
-    
+
     const DEFAULT_TEMPLATES = [
       { id: 1, title: "Proposition de RDV", category: "rdv", content: "Bonjour {first_name},\n\nMerci pour votre retour ! Je serais ravi d'échanger plus en détail sur vos besoins.\n\nVoici mon lien pour réserver un créneau : {calendly_link}\n\nÀ très vite,\nMartin Jeudy\nCEO Hormur" },
       { id: 2, title: "Pas le budget", category: "relance", content: "Bonjour {first_name},\n\nJe comprends tout à fait. Je me permets de noter votre intérêt et reviendrai vers vous dans quelques mois.\n\nBien cordialement,\nMartin Jeudy" },
@@ -141,13 +277,13 @@
       { id: 5, title: "Relance après RDV", category: "suivi", content: "Bonjour {first_name},\n\nSuite à notre échange, je voulais m'assurer que vous aviez bien reçu les éléments évoqués.\n\nAvez-vous pu en discuter en interne ?\n\nBien cordialement,\nMartin Jeudy" },
       { id: 6, title: "Envoi proposition", category: "contrat", content: "Bonjour {first_name},\n\nComme convenu, vous trouverez ci-joint notre proposition pour {company}.\n\nJe me tiens à votre disposition pour en discuter.\n\nBien cordialement,\nMartin Jeudy" },
     ];
-    
+
     // ============================================
     // CONTEXT & HOOKS
     // ============================================
     const AppContext = createContext(null);
     const useApp = () => useContext(AppContext);
-    
+
     // ============================================
     // UTILITY
     // ============================================
@@ -156,12 +292,12 @@
       const diff = Math.floor((new Date() - new Date(d)) / 60000);
       if (diff < 1) return "À l'instant";
       if (diff < 60) return `Il y a ${diff} min`;
-      if (diff < 1440) return `Il y a ${Math.floor(diff/60)}h`;
-      return `Il y a ${Math.floor(diff/1440)}j`;
+      if (diff < 1440) return `Il y a ${Math.floor(diff / 60)}h`;
+      return `Il y a ${Math.floor(diff / 1440)}j`;
     };
-    
+
     const formatDateTime = (d) => d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-    
+
     // ============================================
     // ICON COMPONENT
     // ============================================
@@ -179,7 +315,7 @@
       }, [name, size, className]);
       return <span ref={ref} className="inline-flex items-center justify-center" />;
     };
-    
+
     // ============================================
     // UI COMPONENTS
     // ============================================
@@ -193,7 +329,7 @@
         </div>
       );
     };
-    
+
     const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       if (!isOpen) return null;
       const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
@@ -210,17 +346,17 @@
         </div>
       );
     };
-    
+
     const StatusBadge = ({ status }) => {
       const c = STATUSES[status] || { label: status, color: 'bg-gray-400', textColor: 'text-white' };
       return <span className={`status-badge ${c.color} ${c.textColor} px-2.5 py-1 rounded-full`}>{c.label}</span>;
     };
-    
+
     const Spinner = ({ size = 'md' }) => {
       const s = { sm: 'w-4 h-4', md: 'w-8 h-8', lg: 'w-12 h-12' };
       return <div className={`${s[size]} border-2 border-hormur-sand border-t-hormur-terracotta rounded-full animate-spin`} />;
     };
-    
+
     const EmptyState = ({ icon, title, description }) => (
       <div className="text-center py-12 text-hormur-deep/40">
         <Icon name={icon} size={48} className="mx-auto mb-4 opacity-40" />
@@ -228,7 +364,7 @@
         {description && <p className="text-sm">{description}</p>}
       </div>
     );
-    
+
     // ============================================
     // LOGIN PAGE
     // ============================================
@@ -237,18 +373,18 @@
       const [password, setPassword] = useState('');
       const [error, setError] = useState('');
       const [loading, setLoading] = useState(false);
-      
+
       const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
-        
+
         if (!supabase) {
           setError('Erreur de configuration. Vérifiez config.js et rechargez la page.');
           setLoading(false);
           return;
         }
-        
+
         try {
           const { data, error: dbErr } = await supabase.from('users').select('*').eq('email', email.toLowerCase().trim()).single();
           if (dbErr || !data) { setError('Compte non trouvé'); setLoading(false); return; }
@@ -259,7 +395,7 @@
         } catch (err) { setError('Erreur de connexion. Vérifiez votre configuration Supabase.'); console.error(err); }
         setLoading(false);
       };
-      
+
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="glass-card rounded-3xl p-8 md:p-12 w-full max-w-md">
@@ -288,7 +424,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // NAVIGATION
     // ============================================
@@ -300,7 +436,7 @@
         { id: 'leaderboard', icon: 'Trophy', label: 'Classement' },
       ];
       if (user.role === 'admin') navItems.push({ id: 'admin', icon: 'Settings', label: 'Admin' });
-      
+
       return (
         <>
           {/* Desktop Nav */}
@@ -334,7 +470,7 @@
               </div>
             </div>
           </nav>
-          
+
           {/* Mobile Nav */}
           <nav className="md:hidden mobile-nav glass-card shadow-2xl border-t border-hormur-sand/50">
             <div className="flex items-center justify-around py-2 px-2">
@@ -349,7 +485,7 @@
               </button>
             </div>
           </nav>
-          
+
           {/* Mobile Header */}
           <header className="md:hidden glass-card fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between shadow-md">
             <div className="flex items-center gap-2">
@@ -365,7 +501,7 @@
         </>
       );
     };
-    
+
     // ============================================
     // CONVERSATION VIEW (MESSAGERIE)
     // ============================================
@@ -377,24 +513,24 @@
       const [sending, setSending] = useState(false);
       const [showTemplates, setShowTemplates] = useState(false);
       const messagesEndRef = useRef(null);
-      
+
       useEffect(() => {
         loadMessages();
         const sub = supabase.channel(`msg-${prospect.id}`)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `prospect_id=eq.${prospect.id}` }, 
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `prospect_id=eq.${prospect.id}` },
             (payload) => setMessages(prev => prev.find(m => m.id === payload.new.id) ? prev : [...prev, payload.new]))
           .subscribe();
         return () => sub.unsubscribe();
       }, [prospect.id]);
-      
+
       useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-      
+
       const loadMessages = async () => {
         const { data } = await supabase.from('messages').select('*').eq('prospect_id', prospect.id).order('sent_at', { ascending: true });
         setMessages(data || []);
         setLoading(false);
       };
-      
+
       const applyTemplate = (t) => {
         setNewMessage(t.content
           .replace(/{first_name}/g, prospect.first_name || 'Bonjour')
@@ -402,7 +538,7 @@
           .replace(/{calendly_link}/g, user.calendly_link || 'https://calendly.com/votre-lien'));
         setShowTemplates(false);
       };
-      
+
       const sendMessage = async () => {
         if (!newMessage.trim() || sending) return;
         setSending(true);
@@ -412,7 +548,7 @@
             sender_id: user.id, sender_name: user.name, status: 'pending', sent_at: new Date().toISOString()
           }).select().single();
           if (insertErr) throw insertErr;
-          
+
           const res = await fetch(CONFIG.N8N_WEBHOOK_SEND, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -423,10 +559,10 @@
             })
           });
           if (!res.ok) throw new Error('Erreur n8n');
-          
+
           await supabase.from('messages').update({ status: 'sent' }).eq('id', msgData.id);
           await supabase.from('activity_log').insert({ user_id: user.id, prospect_id: prospect.id, action: 'message_sent' });
-          
+
           setNewMessage('');
           showToast('Message envoyé !');
         } catch (err) {
@@ -435,7 +571,7 @@
         }
         setSending(false);
       };
-      
+
       return (
         <div className="flex flex-col h-[calc(100vh-8rem)]">
           <div className="glass-card rounded-2xl p-4 mb-4 flex items-center justify-between">
@@ -453,7 +589,7 @@
               </select>
             </div>
           </div>
-          
+
           <div className="glass-card rounded-2xl flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {loading ? <div className="flex justify-center py-8"><Spinner /></div> : messages.length === 0 ? (
@@ -473,7 +609,7 @@
               ))}
               <div ref={messagesEndRef} />
             </div>
-            
+
             <div className="border-t border-hormur-sand/50 p-4">
               {showTemplates && (
                 <div className="mb-3 max-h-48 overflow-y-auto bg-hormur-cream/50 rounded-xl p-3">
@@ -490,7 +626,7 @@
               )}
               <div className="flex gap-2">
                 <button onClick={() => setShowTemplates(!showTemplates)} className={`p-3 rounded-xl transition-colors ${showTemplates ? 'bg-hormur-terracotta text-white' : 'bg-hormur-cream/50 hover:bg-hormur-sand/50'}`}><Icon name="FileText" size={20} /></button>
-                <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}} placeholder="Écrire un message... (Entrée pour envoyer)" className="input-field flex-1 px-4 py-3 rounded-xl resize-none" rows={2} />
+                <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Écrire un message... (Entrée pour envoyer)" className="input-field flex-1 px-4 py-3 rounded-xl resize-none" rows={2} />
                 <button onClick={sendMessage} disabled={!newMessage.trim() || sending} className="btn-primary px-4 rounded-xl text-white">
                   {sending ? <Spinner size="sm" /> : <Icon name="Send" size={20} />}
                 </button>
@@ -500,7 +636,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // PIPELINE VIEW (Drag & Drop)
     // ============================================
@@ -508,7 +644,7 @@
       const { prospects, user, claimLead, updateProspectStatus } = useApp();
       const [selectedProspect, setSelectedProspect] = useState(null);
       const [draggedItem, setDraggedItem] = useState(null);
-      
+
       const pipelineData = useMemo(() => {
         const stages = {};
         PIPELINE_STAGES.forEach(status => {
@@ -519,7 +655,7 @@
         });
         return stages;
       }, [prospects, user.id]);
-      
+
       const handleDragStart = (e, p) => { setDraggedItem(p); e.currentTarget.classList.add('dragging'); };
       const handleDragEnd = (e) => { e.currentTarget.classList.remove('dragging'); setDraggedItem(null); document.querySelectorAll('.pipeline-column').forEach(c => c.classList.remove('drag-over')); };
       const handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
@@ -535,16 +671,16 @@
           await updateProspectStatus(draggedItem.id, newStatus);
         }
       };
-      
+
       if (selectedProspect) return <ConversationView prospect={selectedProspect} onBack={() => setSelectedProspect(null)} />;
-      
+
       return (
         <div>
           <div className="flex items-center justify-between mb-6">
             <h1 className="font-display text-2xl font-bold">Mon Pipeline</h1>
             <div className="text-sm text-hormur-deep/60">{Object.values(pipelineData).flat().length} prospects actifs</div>
           </div>
-          
+
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
             {PIPELINE_STAGES.map(status => {
               const items = pipelineData[status] || [];
@@ -587,7 +723,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // DASHBOARD VIEW
     // ============================================
@@ -602,9 +738,9 @@
           mySigned: my.filter(p => p.status === 'SIGNE').length,
         };
       }, [prospects, user.id]);
-      
+
       const hotLeads = prospects.filter(p => p.status === 'REPLIED' && !p.assigned_to).slice(0, 5);
-      
+
       return (
         <div className="space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -623,7 +759,7 @@
               </div>
             ))}
           </div>
-          
+
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="glass-card rounded-2xl p-6">
               <div className="flex items-center justify-between mb-5">
@@ -644,7 +780,7 @@
                 </div>
               )}
             </div>
-            
+
             <div className="glass-card rounded-2xl p-6">
               <h2 className="font-display text-xl font-semibold mb-5">Actions rapides</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -664,7 +800,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // PROSPECTS VIEW (Import CSV)
     // ============================================
@@ -675,13 +811,13 @@
       const [showImport, setShowImport] = useState(false);
       const [importText, setImportText] = useState('');
       const [importing, setImporting] = useState(false);
-      
+
       const filtered = useMemo(() => prospects.filter(p => {
         const matchSearch = !search || `${p.first_name} ${p.last_name} ${p.company}`.toLowerCase().includes(search.toLowerCase());
         const matchStatus = filterStatus === 'all' || p.status === filterStatus;
         return matchSearch && matchStatus;
       }), [prospects, search, filterStatus]);
-      
+
       const parseCSV = (text) => {
         const lines = text.trim().split('\n');
         if (lines.length < 2) return [];
@@ -692,7 +828,7 @@
         const firstIdx = headers.findIndex(h => h.includes('first') || h.includes('prénom'));
         const lastIdx = headers.findIndex(h => h.includes('last') || h.includes('nom'));
         const postIdx = headers.findIndex(h => h.includes('post') || h.includes('poste'));
-        
+
         const data = [];
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map(c => c.trim().replace(/['"]/g, ''));
@@ -702,16 +838,28 @@
         }
         return data;
       };
-      
+
       const handleImport = async () => {
         const data = parseCSV(importText);
         if (data.length === 0) { showToast('Aucune donnée valide', 'error'); return; }
         setImporting(true);
         try {
-          const toInsert = data.map(p => ({ ...p, status: 'TO_CONTACT' }));
-          const { error } = await supabase.from('prospects').insert(toInsert);
-          if (error && error.code !== '23505') throw error;
-          
+          const toInsert = data.map(p => ({
+            ...p,
+            status: 'TO_CONTACT',
+            // On ne veut pas écraser les dates si le prospect existe déjà
+            // created_at sera géré par default
+          }));
+
+          // Utilisation de upsert avec ignoreDuplicates pour ne pas écraser les prospects existants
+          // (notamment leur statut s'ils sont déjà avancés dans le pipeline)
+          const { error } = await supabase.from('prospects').upsert(toInsert, {
+            onConflict: 'linkedin_url',
+            ignoreDuplicates: true
+          });
+
+          if (error) throw error;
+
           // Trigger n8n webhook
           if (CONFIG.N8N_WEBHOOK_IMPORT) {
             fetch(CONFIG.N8N_WEBHOOK_IMPORT, {
@@ -732,14 +880,14 @@
         } catch (err) { console.error(err); showToast('Erreur import', 'error'); }
         setImporting(false);
       };
-      
+
       return (
         <div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <h1 className="font-display text-2xl font-bold">Base de prospects</h1>
             <button onClick={() => setShowImport(true)} className="btn-primary px-5 py-2.5 rounded-xl text-white font-medium flex items-center gap-2"><Icon name="Upload" size={18} />Importer CSV</button>
           </div>
-          
+
           <div className="glass-card rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-hormur-deep/40" />
@@ -750,7 +898,7 @@
               {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
           </div>
-          
+
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -779,7 +927,7 @@
             {filtered.length === 0 && <EmptyState icon="Users" title="Aucun prospect trouvé" />}
           </div>
           <p className="text-sm text-hormur-deep/50 mt-4 text-center">{filtered.length} prospect{filtered.length > 1 ? 's' : ''}</p>
-          
+
           <Modal isOpen={showImport} onClose={() => setShowImport(false)} title="Importer des prospects" size="lg">
             <div className="space-y-5">
               <div>
@@ -805,18 +953,18 @@
         </div>
       );
     };
-    
+
     // ============================================
     // LEADERBOARD VIEW
     // ============================================
     const LeaderboardView = () => {
       const { leaderboard } = useApp();
       const medals = ['🥇', '🥈', '🥉'];
-      
+
       return (
         <div>
           <h1 className="font-display text-2xl font-bold mb-6">Classement</h1>
-          
+
           {leaderboard.length >= 3 && (
             <div className="glass-card rounded-2xl p-6 mb-6">
               <div className="flex items-end justify-center gap-4 h-52">
@@ -832,7 +980,7 @@
               </div>
             </div>
           )}
-          
+
           <div className="glass-card rounded-2xl overflow-hidden">
             <table className="w-full">
               <thead className="bg-hormur-sand/30">
@@ -859,7 +1007,7 @@
               </tbody>
             </table>
           </div>
-          
+
           <div className="mt-6 glass-card rounded-2xl p-5">
             <h3 className="font-semibold mb-3">Système de points</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -871,7 +1019,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // PROFILE VIEW
     // ============================================
@@ -880,7 +1028,7 @@
       const [calendlyLink, setCalendlyLink] = useState(user.calendly_link || '');
       const [phone, setPhone] = useState(user.phone || '');
       const [saving, setSaving] = useState(false);
-      
+
       const handleSave = async () => {
         setSaving(true);
         try {
@@ -891,11 +1039,11 @@
         } catch (err) { console.error(err); showToast('Erreur', 'error'); }
         setSaving(false);
       };
-      
+
       return (
         <div className="max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold mb-6">Mon profil</h1>
-          
+
           <div className="glass-card rounded-2xl p-6 space-y-6">
             <div className="flex items-center gap-4 pb-6 border-b border-hormur-sand/50">
               <div className="w-16 h-16 bg-hormur-sand rounded-full flex items-center justify-center">
@@ -907,18 +1055,18 @@
                 <span className={`text-xs px-2 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{user.role === 'admin' ? 'Administrateur' : 'Commercial'}</span>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-hormur-deep/70 mb-2">Lien Calendly personnel</label>
               <input type="url" value={calendlyLink} onChange={(e) => setCalendlyLink(e.target.value)} className="input-field w-full px-4 py-3 rounded-xl" placeholder="https://calendly.com/votre-nom" />
               <p className="text-xs text-hormur-deep/50 mt-1">Ce lien sera utilisé dans vos templates de messages</p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-hormur-deep/70 mb-2">Téléphone</label>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="input-field w-full px-4 py-3 rounded-xl" placeholder="+33 6 12 34 56 78" />
             </div>
-            
+
             <button onClick={handleSave} disabled={saving} className="btn-primary w-full py-3 rounded-xl text-white font-semibold disabled:opacity-50">
               {saving ? <span className="flex items-center justify-center gap-2"><Spinner size="sm" />Enregistrement...</span> : 'Enregistrer'}
             </button>
@@ -926,7 +1074,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // ADMIN VIEW
     // ============================================
@@ -935,9 +1083,9 @@
       const [showAdd, setShowAdd] = useState(false);
       const [newUser, setNewUser] = useState({ name: '', email: '', password: '', calendly_link: '' });
       const [saving, setSaving] = useState(false);
-      
+
       const commercials = users.filter(u => u.role !== 'admin');
-      
+
       const handleAdd = async () => {
         if (!newUser.name || !newUser.email || !newUser.password) { showToast('Remplissez tous les champs', 'error'); return; }
         setSaving(true);
@@ -950,23 +1098,23 @@
         } catch (err) { console.error(err); showToast('Erreur: ' + (err.message || 'Inconnu'), 'error'); }
         setSaving(false);
       };
-      
+
       const toggleActive = async (userId, active) => {
         await supabase.from('users').update({ active: !active }).eq('id', userId);
         refreshUsers();
         showToast(!active ? 'Compte activé' : 'Compte désactivé');
       };
-      
+
       return (
         <div>
           <h1 className="font-display text-2xl font-bold mb-6">Administration</h1>
-          
+
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display text-xl font-semibold">Gestion des commerciaux</h2>
               <button onClick={() => setShowAdd(true)} className="btn-primary px-4 py-2 rounded-xl text-white font-medium flex items-center gap-2"><Icon name="UserPlus" size={18} />Ajouter</button>
             </div>
-            
+
             <div className="space-y-3">
               {commercials.map(u => (
                 <div key={u.id} className="flex items-center justify-between p-4 bg-hormur-cream/50 rounded-xl">
@@ -984,7 +1132,7 @@
               {commercials.length === 0 && <EmptyState icon="Users" title="Aucun commercial" description="Ajoutez votre premier commercial" />}
             </div>
           </div>
-          
+
           <Modal isOpen={showAdd} onClose={() => setShowAdd(false)} title="Ajouter un commercial" size="sm">
             <div className="space-y-4">
               <div><label className="block text-sm font-medium mb-2">Nom complet *</label><input type="text" value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} className="input-field w-full px-4 py-3 rounded-xl" /></div>
@@ -997,7 +1145,7 @@
         </div>
       );
     };
-    
+
     // ============================================
     // MAIN APP
     // ============================================
@@ -1010,15 +1158,15 @@
       const [leaderboard, setLeaderboard] = useState([]);
       const [toast, setToast] = useState(null);
       const [loading, setLoading] = useState(true);
-      
+
       const showToast = useCallback((msg, type = 'success') => setToast({ message: msg, type }), []);
-      
+
       useEffect(() => {
         const saved = localStorage.getItem('hormur_user');
-        if (saved) try { setUser(JSON.parse(saved)); } catch {}
+        if (saved) try { setUser(JSON.parse(saved)); } catch { }
         setLoading(false);
       }, []);
-      
+
       useEffect(() => {
         if (user && supabase) {
           loadData();
@@ -1026,38 +1174,38 @@
           return () => sub.unsubscribe();
         }
       }, [user]);
-      
+
       const loadData = async () => { await Promise.all([loadProspects(), loadUsers(), loadTemplates(), loadLeaderboard()]); };
       const loadProspects = async () => { const { data } = await supabase.from('prospects_with_assignee').select('*').order('last_update', { ascending: false }); setProspects(data || []); };
       const loadUsers = async () => { const { data } = await supabase.from('users').select('*').order('name'); setUsers(data || []); };
       const loadTemplates = async () => { const { data } = await supabase.from('message_templates').select('*').eq('is_active', true).order('sort_order'); if (data?.length) setTemplates(data); };
       const loadLeaderboard = async () => { const { data } = await supabase.from('leaderboard').select('*'); setLeaderboard(data || []); };
-      
+
       const handleLogin = (u) => setUser(u);
       const handleLogout = () => { localStorage.removeItem('hormur_user'); setUser(null); };
       const updateUser = (u) => { setUser(u); localStorage.setItem('hormur_user', JSON.stringify(u)); };
-      
+
       const claimLead = async (id) => {
         await supabase.from('prospects').update({ status: 'ASSIGNED', assigned_to: user.id, assigned_at: new Date().toISOString() }).eq('id', id);
         await supabase.from('activity_log').insert({ user_id: user.id, prospect_id: id, action: 'lead_claimed' });
         showToast('Lead assigné !');
         loadProspects(); loadLeaderboard();
       };
-      
+
       const updateProspectStatus = async (id, status) => {
         await supabase.from('prospects').update({ status, last_update: new Date().toISOString() }).eq('id', id);
         await supabase.from('activity_log').insert({ user_id: user.id, prospect_id: id, action: 'status_changed', details: { new_status: status } });
         showToast(`Statut : ${STATUSES[status]?.label || status}`);
         loadProspects(); loadLeaderboard();
       };
-      
+
       const unreadCount = useMemo(() => prospects.filter(p => p.status === 'REPLIED' && !p.assigned_to).length, [prospects]);
-      
+
       if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg" /></div>;
       if (!user) return <LoginPage onLogin={handleLogin} />;
-      
+
       const contextValue = { user, users, templates, prospects, leaderboard, showToast, claimLead, updateProspectStatus, refreshProspects: loadProspects, refreshUsers: loadUsers, updateUser, setCurrentView };
-      
+
       return (
         <AppContext.Provider value={contextValue}>
           <div className="min-h-screen pb-24 md:pb-8">
@@ -1075,8 +1223,9 @@
         </AppContext.Provider>
       );
     };
-    
+
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
+
 </html>
