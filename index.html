@@ -925,7 +925,8 @@
         if (!newUser.name || !newUser.email || !newUser.password) { showToast('Remplissez tous les champs', 'error'); return; }
         setSaving(true);
         try {
-          const { error } = await supabase.from('users').insert({ ...newUser, email: newUser.email.toLowerCase(), password_hash: newUser.password, role: 'commercial', active: true });
+          const { password, ...userWithoutPassword } = newUser;
+          const { error } = await supabase.from('users').insert({ ...userWithoutPassword, email: newUser.email.toLowerCase(), password_hash: password, role: 'commercial', active: true });
           if (error) throw error;
           showToast('Commercial ajouté !');
           setShowAdd(false); setNewUser({ name: '', email: '', password: '', calendly_link: '' }); refreshUsers();
