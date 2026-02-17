@@ -549,6 +549,9 @@
           }).select().single();
           if (insertErr) throw insertErr;
 
+          // Optimistic update: Add message immediately
+          setMessages(prev => [...prev, msgData]);
+
           const res = await fetch(CONFIG.N8N_WEBHOOK_SEND, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -561,6 +564,9 @@
           if (!res.ok) throw new Error('Erreur n8n');
 
           await supabase.from('messages').update({ status: 'sent' }).eq('id', msgData.id);
+          // Update status to sent locally
+          setMessages(prev => prev.map(m => m.id === msgData.id ? { ...m, status: 'sent' } : m));
+
           await supabase.from('activity_log').insert({ user_id: user.id, prospect_id: prospect.id, action: 'message_sent' });
 
           setNewMessage('');
@@ -568,6 +574,7 @@
         } catch (err) {
           console.error('Erreur envoi:', err);
           showToast('Erreur lors de l\'envoi', 'error');
+          // Mark as failed locally if needed, though simpler to just alert user
         }
         setSending(false);
       };
@@ -578,7 +585,12 @@
             <div className="flex items-center gap-4">
               <button onClick={onBack} className="p-2 hover:bg-hormur-sand/50 rounded-xl"><Icon name="ArrowLeft" size={20} /></button>
               <div>
-                <h2 className="font-semibold text-lg">{prospect.first_name} {prospect.last_name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-lg">{prospect.first_name} {prospect.last_name}</h2>
+                  {prospect.linkedin_url && (
+                    <a href={prospect.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-hormur-deep/40 hover:text-[#0077b5] transition-colors"><Icon name="Linkedin" size={18} /></a>
+                  )}
+                </div>
                 <p className="text-sm text-hormur-deep/60">{prospect.company} {prospect.post && `• ${prospect.post}`}</p>
               </div>
             </div>
